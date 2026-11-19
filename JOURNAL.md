@@ -17,3 +17,26 @@ Anyways, that's about it for today. Next I may finish the battery charger, break
 ### Worked ~1.75 hours
 
 ![Schematic Image](Assets/Journal_Images/Oct23_1.png)
+
+## Day 2 - Mon, November 16th
+
+Welp, I've postponed this thing quite a lot, but I did a bunch more work on the battery side of the schematic and some preliminary wire routing. First, I finished the BQ24074 wiring, just with input/output caps, adding nets to pins, and adding status LEDs. I also researched how exactly the charger outputs voltage via power path, and how exactly to interface it with the buck/boost converter. After some digging around I found that when 5V USB is plugged in, the OUT pin gives off 4.2V protected max, regardless of whether the battery is charging or not. With USB unplugged, the battery provides whatever voltage it can (a range of 3V bare minimum to 4.2V fully charged, with 3.7V typical voltage) which is routed straight out the output.
+
+I then began the boost/buck converter to turn the battery charger's 3-4.2v output into 3.3v—at first I planned to use the same converter that I had in my previous devboard design, but this time I decided to put actual effort into finding exactly the right one for this application. Previously I'd used the TPS63031, not at all a _bad_ chip, but after some googling I determined the TPS63802 to be a better choice. The 63802 doesn't have a preset 3.3v output, so it needs external configuration resistors, but that's perfectly fine given its far superior max continuous amperage and better features in efficiency and versatility for basically the same price.
+
+So I found its datasheet, checked out the typical application and how to select resistors & the inductor, and wired the thing up. I had to do some research to find a good capacitor, as their recommended model isn't in stock at digikey. This wasn't too difficult, however, and the model I found (EXLA1V0402 R47) has all the recommended or greater values, such as max amperage and DC resistance (12.5A sat current, 6.8mΩ DCR for the EXLA vs the recommended 5.4A SC, 7.6mΩ DRC for the coilcraft).
+
+Next I added the USB port! For this I did basically copy my last devboard components: a USBLC6-2SC6 protection chip, standard USBC-2.0, and a schottkey diode between VBUS (from the USB cable) to 5V (to the battery charger). I'd done good research on this diode previously, so I didn't feel the need to change it here.
+
+After all this schematicizing, I imported everything into the PCB editor and began some routing! First I looked around for a good USB-C port on Digikey, and found a version with SMD shield pins, which look really interesting. I decided to go for it, so I'll theoretically have more room for B.Cu routing under the USB if necessary, and to more easily solder totally single-sided-ly. I arranged this, the protection IC, the schottkey diode, and the 5.1k CC resistors into the Optimal Configuration (I'm attempting to make this board totally single-sided; we'll see how long that lasts), and drew big fat polygon fills between power pins. I imported the ESP32-S3 footprint and some mock pinheaders (unconnected for now) to roughly bound the area, and quickly found out that space may be a bit of an issue. I drew some differential pairs from the USB to the ESP, and made a lil external antenna (one of those plug-in ones, not onboard) at the top of the board. I arranged all the battery-oriented features together, keeping caps close to their pins, and, referencing the typical layout of the TPS63802 and BQ24074 datasheets, organized them to provide the least resistance between vital connections. I routed everything, again, with polygons rather than traces, both to make it look nicer and to connect everything as closely as possible. So far I've been using 0805 footprints for resistors and capacitors, but given how much space I've already consumed, that may need to drastically change. I only fear for ease of assembly... in any case, I could always expand the board on the long axis (and add more pinheaders), although I'd prefer to keep it smaller.
+
+I'll figure it out at some point. The next journal will probably be a while after this one, as I'm working on other projects at the moment.
+
+### Worked 3 hours
+
+![BQ24074](Assets/Journal_Images/Nov16_1.png)
+![TPS63802](Assets/Journal_Images/Nov16_2.png)
+![USB-C](Assets/Journal_Images/Nov16_3.png)
+![USB-C PCB](Assets/Journal_Images/Nov16_4.png)
+![Main Board](Assets/Journal_Images/Nov16_5.png)
+![Battery Routing](Assets/Journal_Images/Nov16_6.png)
